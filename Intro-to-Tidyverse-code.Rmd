@@ -1,0 +1,125 @@
+---
+title: "Intro to Tidyverse"
+author: "LGCarlson"
+date: "6/20/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+theme_set(theme_light())
+```
+
+## Welcome to the...
+```{r welcome to the jungle, echo=FALSE}
+tidyverse_logo()
+```
+
+## Tidyverse
+
+> The tidyverse is an *opinionated* collection of R packages designed for data science. ~Hadley Wickham
+
+The tidyverse is a group of packages with a common design philosophy that uses a concise syntax to help you clean, organize, analyze, and visualize large data sets with ease. The syntax was popularized by “R for Data Science” by Hadley Wickham and Garrett Grolemund, but its rooted in the idea that workflows should be both readable and reproducible. Tidyverse packages help your code read left to right, more like a sentence: in base code, you'd write `h(g(f(x)))` but in tidyverse syntax, you'd write `x %>% f %>% g %>% h`.
+
+Here is the *opinion* part:
+
+>“Programs must be written for people to read and only incidentally for machines to execute”. ~Hal Abelson
+
+If you think about it, it really does make more sense to read your code like you'd read a book rather than reading from the inside out. As more of a writer than a mathemetician myself, this structure inherently made more sense to me than dollar sign or function syntax. Learning ggplot and other tidy commands transformed me from a reluctant and deficient coder into an enthusiastic (and hopefully proficient) one! 
+
+The tidyverse is widely used because it is logical, but also because it has packages for every step of your data's journey from import to output. Each package uses consistent a grammar and data structure.
+
+**1) Import:** 
+
+* readr
+
+**2) Tidy:** 
+
+* tibble
+
+* tidyr
+
+**3) Transform:**
+
+* dplyr
+
+* forcats
+
+* lubridate
+
+* stringr
+
+**4) Visualize:** 
+
+* ggplot2
+
+**5) Model:**
+
+* broom
+
+* modelr
+
+**6) Program:**
+
+* purrrr
+
+* magrittr.. [ceci n'est pas une pipe!](https://github.com/tidyverse/magrittr/issues/153)
+
+
+There are many more great packages that are tidy-friendly, but we will focus on this core group, and more specifically on tidy, dplyr, and ggplot2. Fear not, you don't need to install all of these packages individually, just load the tidyverse!
+`install.packages("tidyverse") library(tidyverse)`
+
+
+## Grammar
+
+Before we start coding, there are a few peices of tidyverse jargon we need to define:
+
+*[tidy data](https://vita.had.co.nz/papers/tidy-data.pdf)* - In the framework of tidy data every row is an observation, every column represents variables and every entry into the cells of the data frame are values. As you might expect, the tidyverse aims to create, visualize, and analyze data in a tidy format.
+
+*[tibble](https://cran.r-project.org/web/packages/tibble/vignettes/tibble.html)* - Tibbles are a modern take on data frames. They keep the features that have stood the test of time, and drop the features that used to be convenient but are now frustrating (i.e. converting character vectors to factors). More on tibbles later.
+
+*%>% also known as a pipe* - The infix operator is a function that passes the left hand side of the operator to the first argument on the right hand side of the operator. Thus, `iris %>% head()` is equivalent to `head(iris)`. You can call the pipe multiple times to "chain" functions together (nesting in base R). 
+
+
+## Readr
+
+To read in a dataset, use the readr package. `readr::read_csv` replaces `read.csv` which allows for faster data reading. read_csv will also preserve column names and it will not coerce characters to factors (i.e., no more `header = TRUE, stringsAsFactors = FALSE)` yay!) Let's try it!
+
+```{r read cetaceans data, message=FALSE, warning=FALSE}
+cetaceans<-read_csv("https://raw.githubusercontent.com/LGCarlson/tidytuesday/master/data/2018/2018-12-18/allCetaceanData.csv")
+
+cetaceans %>% class()
+```
+
+
+## Tibble
+As shown by calling "class" above, readr functions automatically read your dataset as a tibble. Let's see what that looks like by calling head() and asking for the first 10 observations. 
+
+`Base R equalivalent: head(cetaceans)`
+
+```{r define head}
+cetaceans %>%
+  head(10)
+```
+
+When you preview a tibble, it always prints the class of each object, but you can get more information about the tibble by calling glimpse. This is a good function to know. As a wise colleage once advised me... "always check the %$#*ing structure!" 
+
+`Base R equalivalent: str(cetaceans)`
+
+```{r define glimpse}
+cetaceans %>% 
+  glimpse()
+```
+
+
+## Tidyr
+
+Is this a tidy dataset as it is? It is! But could it be.... dare I say, tidyr?
+
+
+
+
+
+
