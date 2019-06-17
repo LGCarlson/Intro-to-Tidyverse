@@ -80,7 +80,7 @@ Before we start coding, there are a few peices of tidyverse jargon we need to de
 
 *[tibble](https://cran.r-project.org/web/packages/tibble/vignettes/tibble.html)* - Tibbles are a modern take on data frames. They keep the features that have stood the test of time, and drop the features that used to be convenient but are now frustrating (i.e. converting character vectors to factors). More on tibbles later.
 
-*%>% also known as a pipe* - The infix operator is a function that passes the left hand side of the operator to the first argument on the right hand side of the operator. Thus, `iris %>% head()` is equivalent to `head(iris)`. You can call the pipe multiple times to "chain" functions together (nesting in base R). 
+*%>% also known as a pipe* - The infix operator is a function that passes the left hand side of the operator to the first argument on the right hand side of the operator. Thus, `iris %>% head()` is equivalent to `head(iris)`. This operator is convinient because you can call the pipe multiple times to "chain" functions together (nesting in base R). The pipe operator is not required to use tidyverse functions, but it does make them more convinient.
 
 
 ## Readr
@@ -118,8 +118,146 @@ cetaceans %>%
 
 Is this a tidy dataset as it is? It is! But could it be.... dare I say, tidyr?
 
+Here are a few tidyr functions that may be useful. 
+**separate** - separate one column into several
+
+The separate command is saying seperate the "originDate"  column into "originYear","originMonth", and "originDay". The sep= command tells the function what each element should be separated by. This can be anything, such as [^[:alnum:]]+. Finally, remove = TRUE deletes the original column, but remove = FALSE retains it. 
+
+The select column is just saying we want to ignore all the other data columns except originDate, originYear, originMonth, and originDay.
+
+`Base R equalivalent:`
+
+```{r}
+cetaceans %>% 
+  separate(originDate, into = c("originYear","originMonth", "originDay"), sep = "-", remove = FALSE) %>%
+  select(originDate, originYear, originMonth, originDay) %>%
+  head(10)
+```
+
+**gather** - gather columns into rows (make a long dataset)
+
+There isn't a variable I would actually want to gather by in this dataset, but we'll pretend.
+
+Explanation by line: 
+1) For the first time, we are going to actually save the edits we make the the dataframe as a new object (parentlong) rather than just printing them. 
+
+2) Next, we will gather columns 11 and 12 so that we have a long (less tidy) dataset. Each individual could now have two rows: one row for the mother, one for the father. The "key" column called parentgender will tell us if the partent in the "value" column is the mother or father. The "value" column will provide the parent name. 
+
+3) Then, we will select the columns id, name, and the new columns we just created.
+
+4) We will filter out the rows where "parentname" is NA for easier example-viewing purposes. 
+
+5) Then, we will order the rows in descending order by ID 
+
+6) We will select the first 40 cases
+
+`Base R equalivalent:`
+```{r}
+parentlong<-cetaceans %>% 
+  gather(key = "parentgender", value = "parentname", 11:12) %>%
+  select(id, name, parentgender, parentname) %>%
+  filter(!is.na(parentname)) %>% 
+  arrange(desc(id)) %>%
+  head(40)
+
+parentlong %>%
+  head(10)
+```
+
+
+**spread** - the inverse of gather: create a wide dataset by spreading columns
+
+Now, we will spread the tibble back to wide form (one row per unique individual). "Parentgender" will become the column names and "parentname" will provide values to those columns. If a value is not present, it will be filled with NA. 
+
+`Base R equalivalent:`
+
+```{r}
+parentlong %>% 
+  tidyr::spread(key = parentgender,value = parentname, fill = NA) %>% 
+  arrange(desc(id))
+```
+
+
+## Dplyr
+
+Dplyr is maybe the most useful packages in all of R. It provides a few functions that are absolutely essential for data wrangling/transformation. 
+
+* `select()` selecting variables
+
+* `filter()` provides basic filtering capabilities
+
+* `group_by()` groups data by categorical levels
+
+* `summarise()` summarise data by functions of choice
+
+* `arrange()` ordering data
+
+* `join()` joining separate dataframes
+
+* `mutate()` create new variables
+
+Some of these I've already had to use above to accomplish what I wanted to, but let's look at them individually. 
+
+
+**select** keep (or drop) variables by name
+
+Here, I removed the pesky (and unnecessary) ID column that read_csv created (one bad feature of readr). 
+The minus sign before the column name denotes that you wish to remove that column. In dplyr, you can refer to columns by their names much more easily. The base equivalent requires you to know the positions of each variable you wish to select or remove, which is easy in this case, but that isn't always true. 
+
+dplyr: select all columns except X1
+base: select all columns except that in position 1
+```{r}
+cetaceans %>%
+  select(-X1) %>%
+  head(6)
+
+#Base equivalent
+head(cetaceans[,2:22])
+```
+
+
+Here, I just selected the species, id, and name of each dolphin. Again, it is more apparent how you're actually transforming the data when you use dplyr. 
+
+dplyr: select all columns between the columns "species" and "name"
+base: select all columns between 2:4
+```{r}
+cetaceans %>% 
+  select(species:name) %>%
+  head(6)
+
+#Base equivalent
+head(cetaceans[,2:4])
+```
+
+There are also a variety of useful helper functions for select that you can use to make conditional statement. 
+
+dplyr: select the column "name," and any column that ends with the word "Date." 
+```{r}
+cetaceans %>%
+  select(name, ends_with("Date")) %>%
+  head(6)
+```
+
+
+You can also use select to rearrange columns. Let's say you make another ID column called "nameID" (created with unite_ of dplyr rather than unite tidyr, which I don't like as well). 
+Perhaps you want to rearrange your columns so that your new ID is in the first colum, followed by sex, followed by acquisition, followed by all other columns. So you're not deleting any columns, you're just moving them around. 
+
+```{r}
+cetaceans %>%
+  unite_("nameID",c("name","birthYear"),sep = "_") %>% 
+  select(nameID, sex, acquisition, everything())
+```
 
 
 
 
 
+
+
+
+
+
+
+
+
+Data Wrangling Cheat Sheet: https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf
