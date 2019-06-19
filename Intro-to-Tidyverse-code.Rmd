@@ -561,7 +561,6 @@ You can add a variety geometries to create different types of plots. Check out t
 
 If you define the aesthetics in the ggplot() command, the geoms don't require any arguments, but you can always add layer-specific aesthetics (see size = 2).
 
-`Base equivalent:`
 
 ```{r add geoms, fig.width=7.5, fig.height=3.5}
 p1<-ggplot(data = gapminder, aes(x = year, y = pop, color = continent)) + geom_point(size = 2) + 
