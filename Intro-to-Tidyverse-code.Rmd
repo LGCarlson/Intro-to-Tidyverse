@@ -806,7 +806,7 @@ _Location scales:_
 * scale_x/y_continuous(limits = c()) - define limits with clipping
 
 
-Find a complete compilation of text_spec("R", color = "blue") text_spec("color",color = "red") text_spec("palettes",color = "purple") [here](https://github.com/EmilHvitfeldt/r-color-palettes)
+Find a complete compilation of R color palettes [here](https://github.com/EmilHvitfeldt/r-color-palettes)
 
 Most importantly, you can preview and subsequently use Wes Anderson palettes. 
 ```{r moonrise kingdom, fig.width=3, fig.height=2}
