@@ -8,6 +8,6 @@ You may access the code in one of two ways:
 
 2) Fork this repository to your own GitHub and create a local copy. For more information on how to fork and clone a repo, refer to instructions by @aallyn [here](https://github.com/LGCarlson/Lab-Management/blob/master/WeeklyMeetingsInstructions.md). 
 
-You may also view the knitted code on [RPubs}(http://rpubs.com/lgcarlson/tidyverseminiworkshop). 
+You may also view the knitted code on [RPubs](http://rpubs.com/lgcarlson/tidyverseminiworkshop). 
 
 I did not include the code for installing packages, so please make sure all necessary packages are downloaded before we begin. 
