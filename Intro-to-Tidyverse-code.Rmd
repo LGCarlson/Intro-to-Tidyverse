@@ -14,6 +14,7 @@ library(lubridate)
 library(gapminder)
 library(ggthemes)
 library(scales)
+library(kableExtra)
 theme_set(theme_light())
 ```
 
@@ -92,32 +93,52 @@ Before we start coding, there are a few peices of tidyverse jargon we need to de
 
 ## Readr
 
-To read in a dataset, use the readr package. `readr::read_csv` replaces `read.csv` which allows for faster data reading. read_csv will also preserve column names and it will not coerce characters to factors (i.e., no more `header = TRUE, stringsAsFactors = FALSE)` yay!) Let's try it!
+To read in a dataset, use the readr package. `readr::read_csv` replaces `read.csv` which allows for faster data reading. read_csv will also preserve column names and it will not coerce characters to factors (i.e., no more `header = TRUE, stringsAsFactors = FALSE)` yay!) 
 
 ```{r read cetaceans data, message=FALSE, warning=FALSE}
 cetaceans<-read_csv("https://raw.githubusercontent.com/LGCarlson/tidytuesday/master/data/2018/2018-12-18/allCetaceanData.csv")
 
 cetaceans %>% class()
 ```
+_Base R equalivalent_
+```{r read.csv in Base R}
+# Base R equalivalent:
+
+# cetatceans<-read.csv("https://raw.githubusercontent.com/LGCarlson/tidytuesday/master/data/2018/2018-12-18/allCetaceanData.csv",header = TRUE, stringsAsFactors = FALSE)
+
+# class(cetaceaens)
+# [1] "data.frame"
+```
 
 
 ## Tibble
 As shown by calling "class" above, readr functions automatically read your dataset as a tibble. Let's see what that looks like by calling head() and asking for the first 10 observations. 
-
-`Base R equalivalent: head(cetaceans)`
 
 ```{r define head}
 cetaceans %>%
   head(10)
 ```
 
-When you preview a tibble, it always prints the class of each object, but you can get more information about the tibble by calling glimpse. This is a good function to know. As a wise colleage once advised me... "always check the %$#*ing structure!" 
+_Base R equalivalent_
+```{r head in Base R}
+# Base R equalivalent: 
 
-`Base R equalivalent: str(cetaceans)`
+# head(cetaceans)
+```
+
+
+When you preview a tibble, it always prints the class of each object, but you can get more information about the tibble by calling glimpse. This is a good function to know. As a wise colleage once advised me... "always check the %$#*ing structure!" 
 
 ```{r define glimpse}
 cetaceans %>% 
   glimpse()
+```
+
+_Base R equalivalent_
+```{r str in Base R}
+# Base R equalivalent: 
+
+# str(cetaceans)
 ```
 
 
@@ -137,14 +158,36 @@ Finally, remove = TRUE deletes the original column, but remove = FALSE retains i
 
 The select column is just saying we want to ignore all the other data columns except originDate, originYear, originMonth, and originDay.
 
-`Base R equalivalent:`
-
 ```{r define separate}
 cetaceans %>% 
   separate(originDate, into = c("originYear","originMonth", "originDay"), sep = "-", remove = FALSE) %>%
   select(originDate, originYear, originMonth, originDay) %>%
   head(10)
 ```
+
+_Base R equalivalent_
+```{r define separate Base R}
+# Base R equalivalent:
+
+# originDate<-as.character(cetaceans$originDate)
+
+# YMD<-c()
+# for(i in 1:length(originDate)){
+# if(is.na(originDate[i])){
+#    YMD<-rbind(YMD,rep(NA,3))
+#    next
+# }
+# YMD<-rbind(YMD,unlist(strsplit(originDate[i],"-")))
+# }
+
+# Dates<-data.frame(originDate=cetaceans$originDate,
+#                   originYear=YMD[,1],
+#                   originMonth=YMD[,2],
+#                   originDay=YMD[,3])
+
+# head(Dates)
+```
+
 
 #### **gather** - gather columns into rows (make a long dataset)
 
@@ -164,7 +207,6 @@ _Explanation by line:_
 
 6) We will select the first 40 cases
 
-`Base R equalivalent:`
 ```{r, define gather}
 parentlong<-cetaceans %>% 
   gather(key = "parentgender", value = "parentname", 11:12) %>%
@@ -178,16 +220,55 @@ parentlong %>%
 ```
 * In these examples, I've included the argument names "key=", "value=", etc. Note that just like in base R, you don't have to include argument names so long as you put them in the correct order. 
 
+_Base R equalivalent_
+```{r, define gather Base R}
+# Base R equalivalent:
+
+# parentlong<-cetaceans[,c(3,4,11,12)]
+
+# parentlong<-parentlong[complete.cases(parentlong),]
+
+# new<-c()
+# for(i in 1:nrow(parentlong)){
+#   new<-rbind(new,rbind(c(parentlong$id[i],parentlong$name[i],colnames(parentlong)[3],parentlong$mother[i]),
+#                   c(parentlong$id[i],parentlong$name[i],colnames(parentlong)[4],parentlong$father[i])))
+# }
+# new<-as.data.frame(new)
+# colnames(new)<-c("id","name","parentgender","parentname")
+
+# parentlong<-new
+
+# parentlong<-parentlong[order(parentlong$id,decreasing=TRUE),]
+
+# head(parentlong[complete.cases(parentlong),],n=10)
+```
+
+
 #### **spread** - the inverse of gather: create a wide dataset by spreading columns
 
 Now, we will spread the tibble back to wide form (one row per unique individual). "Parentgender" will become the column names and "parentname" will provide values to those columns. If a value is not present, it will be filled with NA. 
-
-`Base R equalivalent:`
 
 ```{r, define spread}
 parentlong %>% 
   tidyr::spread(key = parentgender,value = parentname, fill = NA) %>% 
   arrange(desc(id))
+```
+
+_Base R equalivalent_
+```{r, define spread base R}
+# Base R equalivalent:
+  
+# parentlong<-parentlong[order(as.numeric(row.names(parentlong))),]
+
+# parentlong<-data.frame(id=subset(parentlong,parentgender=="father")[,1],
+#               name=subset(parentlong,parentgender=="father")[,2],
+#               father=subset(parentlong,parentgender=="father")[,4],
+#               mother=subset(parentlong,parentgender=="mother")[,4])
+
+# parentlong<-parentlong[order(parentlong$id,decreasing=T),]
+
+# head(parentlong[complete.cases(parentlong),],n=10)
+
 ```
 
 
@@ -223,29 +304,39 @@ Here, I removed the pesky (and unnecessary) ID column that read_csv created (one
 The minus sign before the column name denotes that you wish to remove that column. In dplyr, you can refer to columns by their names much more easily. The base equivalent requires you to know the positions of each variable you wish to select or remove, which is easy in this case, but that isn't always true. 
 
 dplyr: select all columns except X1
-base: select all columns except that in position 1
 ```{r, define select except}
 cetaceans %>%
   select(-X1) %>%
   head(6)
-
-#Base equivalent
-head(cetaceans[,2:22])
 ```
 
+_Base R equalivalent_
+base: select all columns except that in position 1
+```{r select cols in Base R}
+# Base R equalivalent: 
+
+# head(cetaceans[,2:22])
+```
 
 Here, I just selected the species, id, and name of each dolphin. Again, it is more apparent how you're actually transforming the data when you use dplyr. 
 
 dplyr: select all columns between the columns "species" and "name"
-base: select all columns between 2:4
 ```{r, define select inclusive}
 cetaceans %>% 
   select(species:name) %>%
   head(6)
-
-#Base equivalent
-head(cetaceans[,2:4])
 ```
+
+_Base R equalivalent_
+base: select all columns between 2:4
+```{r select cols 2 Base R}
+# Base R equalivalent: 
+
+# head(cetaceans[,2:4])
+```
+
+
+#### **select** keep (or drop) columns by a conditional statement
 
 There are also a variety of useful helper functions for select that you can use to make conditional statement. 
 
@@ -264,14 +355,27 @@ Perhaps you want to rearrange your columns so that your new ID is in the first c
 `rename()`: you can also rename columns in dplyr. The new name is in the first "" and the original name is second. 
 
 
-`Base R equalivalent:`
-
 ```{r, define select reorder}
 cetaceans %>%
   unite_("nameID",c("name","birthYear"),sep = "_") %>% 
   select(nameID, sex, acquisition, everything()) %>%
   rename("originType" = "acquisition")
 ```
+
+_Base R equalivalent_
+```{r, define select reorder base R}
+# Base R equalivalent:
+
+# cetaceans<-data.frame(nameID=paste(cetaceans$name,cetaceans$birthYear,sep="_"),
+#     sex=cetaceans$sex,
+#     acquisition=cetaceans$acquisition,
+#     cetaceans[,-which(colnames(cetaceans) %in%  c("name","birthYear","sex","acquisition"))])
+
+# colnames(cetaceans)[which(colnames(cetaceans)=="acquisition")]<-"originType"
+
+```
+
+
 
 #### **filter** - filters rows by their value
 
@@ -296,13 +400,23 @@ Explanation by line:
 
 3) Next we will filter out all inividuals whose transfer date is earlier than 1990 (keep only transfers after Jan 1, 1990). The "filter" command actually works with date values! 
 
-`Base R equalivalent:`
 
 ```{r, define filter, warning=FALSE}
 cetaceans %>%
   select(name, ends_with("Date")) %>%
   filter(!is.na(statusDate)) %>%
   filter(transferDate >= "1990-01-01")
+```
+_Base R equalivalent_
+```{r, define filter base R, warning=FALSE}
+# Base R equalivalent:
+
+# cetaceans<-cetaceans[,c(which(colnames(cetaceans)=="name"),
+#                         which(endsWith(colnames(cetaceans),"Date")))]
+
+# cetaceans<-cetaceans[which(!is.na(cetaceans$statusDate)),]
+
+# cetaceans[which(cetaceans$transferDate>="1990-01-01"),]
 ```
 
 
@@ -330,8 +444,6 @@ We are telling summarize to count (n) the number in each group and take the mean
 
 5) Finally, we used mutate_at to round to the nearest whole number (because partial years aren't very informative). 
 
-`Base R equalivalent:`
-
 ```{r, define group_by and summarize, warning=FALSE}
 cetaceans %>%
   mutate(birthYear = as.double(birthYear)) %>% 
@@ -346,8 +458,6 @@ cetaceans %>%
 Sometimes it is helpful to rank observations or summaries by the value of a variable. The arrange function allows us to order data by variables in accending or descending order.
 
 `count` is does the same thing as summarize n=n(). However, count takes the grouping variable as the arguement, but n=n() doesn't take any arguments and relies on group_by to know how to count.
-
-`Base R equalivalent:`
 
 ```{r define arrange, warning=FALSE}
 cetaceans %>%
@@ -389,7 +499,6 @@ There are four types of join:
 
 * `anti_join()`: Opposite of semi_join
 
-`Base R equalivalent:`
 
 ```{r, define join, warning=FALSE}
 cetaceans %>%
@@ -419,8 +528,6 @@ _Explanation by line:_
 
 6) Create a new column called "age" that = difference between death year and birth year
 
-`Base R equalivalent:`
-
 ```{r, define mutate, warning=FALSE}
 cetaceans %>%
   filter(status == "Died") %>%
@@ -445,8 +552,6 @@ _Explanation by line:_
 4) Select the top 10 columns
 
 5) Arrange in descending order by n
-
-`Base R equalivalent:`
 
 ```{r top_n, warning=FALSE, message=FALSE}
 cetaceans %>%
@@ -701,29 +806,32 @@ _Location scales:_
 * scale_x/y_continuous(limits = c()) - define limits with clipping
 
 
-Find a complete compilation of R color palettes [here](https://github.com/EmilHvitfeldt/r-color-palettes)
+Find a complete compilation of text_spec("R", color = "blue") text_spec("color",color = "red") text_spec("palettes",color = "purple") [here](https://github.com/EmilHvitfeldt/r-color-palettes)
 
-Most importantly, preview Wes Anderson palettes. 
+Most importantly, you can preview and subsequently use Wes Anderson palettes. 
 ```{r moonrise kingdom, fig.width=3, fig.height=2}
 #install.packages("wesanderson")
 library(wesanderson) 
 wes_palette("Moonrise3")
 ```
 
+Here is an example of a few different scales. You can put variables on a log scale without modifying them in your dataframe. You can set the limits of your plot. You can even color continuous variables by defining a gradient. 
 
 ```{r scale example, warning=FALSE, fig.width=6, fig.height=4}
 gapminder %>% 
   filter(continent == "Africa") %>% 
   ggplot(aes(x = gdpPercap, y = lifeExp, color = lifeExp)) + 
   geom_point() + scale_x_log10() + scale_y_continuous(limits = c(30,70)) + 
-  scale_color_continuous()
+  scale_color_continuous(low = wes_palette("Zissou1")[1], high = wes_palette("Zissou1")[4])
 ```
 
 
 
 
 
-#### Step: only if you _absolutely_ must.... 
+#### Step: don't try this at home/use only if you _absolutely_ must.... 
+
+_Disclaimer: The author of this document does not condone the use of pie charts._ 
 
 you can use different coordinate systems. But... maybe just stick to `coord_cartesian()` and `coord_flip()` and forget about other coordinate systems? 
 
@@ -825,5 +933,6 @@ ggplot(ribbon, aes(time, value)) +
   geom_line(color = "black") + theme(panel.grid = element_blank())
 ```
 
-Well, that's all folks! You can find the ultimate tidyverse cheat sheet [here](https://s3.amazonaws.com/assets.datacamp.com/blog_assets/Tidyverse+Cheat+Sheet.pdf) and a variety of great documentaion all around the web. 
+Well, that's all folks! You can find the ultimate tidyverse cheat sheet [here](https://s3.amazonaws.com/assets.datacamp.com/blog_assets/Tidyverse+Cheat+Sheet.pdf) and a variety of great documentation all around the web. 
 
+Finally, a big thank you to Miguel for writing some of the base R code! He did an excellent job to make them as sleek and simple as possible!
